@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LensLog - 아카이브 갤러리</title>
+    <link rel="stylesheet" href="src/style.css">
+  </head>
+  <body>
+    <header style="padding: 20px; text-align: center; background: #1A365D; color: white; position: relative;">
+      <h1 style="margin: 0;">LensLog Universal</h1>
+      <button id="logout-btn" style="position: absolute; left: 20px; top: 25px; background: transparent; color: white; border: 1px solid white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none;">로그아웃</button>
+      <button id="open-settings-btn" style="position: absolute; right: 20px; top: 25px; background: white; color: #1A365D; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">장비 및 롤 관리</button>
+    </header>
+
+    <main style="padding: 20px;">
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px;">
+        <button id="tab-global" style="padding: 10px 20px; background: #1A365D; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">글로벌 대시보드</button>
+        <button id="tab-mypage" style="padding: 10px 20px; background: #E2E8F0; color: #2D3748; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">마이페이지</button>
+      </div>
+
+      <div id="user-profile-header" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: #F7FAFC; border: 1px solid #E2E8F0; border-radius: 8px;">
+        <h2 id="profile-username" style="margin: 0; color: #2B6CB0; font-size: 18px;">📸 User님의 갤러리</h2>
+        <button id="back-to-global-btn" style="padding: 6px 12px; background: white; border: 1px solid #CBD5E0; border-radius: 4px; font-weight: bold; color: #4A5568; cursor: pointer;">← 전체 보기로 복귀</button>
+      </div>
+      
+      <input type="file" id="auto-upload-input" accept="image/*, .dng, .cr2, .nef, .arw" style="display: none;">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="margin: 0; color: #2C3E50;">아카이브 갤러리 (Published)</h3>
+        <div style="display: flex; gap: 15px;">
+          <div>
+            <label style="font-weight: bold; margin-right: 5px; color: #4A5568;">바디:</label>
+            <select id="filter-body-select" style="padding: 6px; border-radius: 4px; border: 1px solid #CBD5E0; width: 150px;">
+              <option value="all">모든 바디</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-weight: bold; margin-right: 5px; color: #4A5568;">렌즈:</label>
+            <select id="filter-lens-select" style="padding: 6px; border-radius: 4px; border: 1px solid #CBD5E0; width: 150px;">
+              <option value="all">모든 렌즈</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="gallery-grid" class="grid"></div>
+    </main>
+
+    <button id="open-modal-btn" class="fab">+</button>
+
+    <div id="login-modal" class="modal" style="display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.9); z-index: 9999;">
+      <div class="modal-content" style="max-width: 320px; text-align: center; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <h2 style="color: #1A365D; margin-top: 0;">LensLog Login</h2>
+        <p style="color: #4A5568; font-size: 13px; margin-bottom: 25px;">서버와 동기화된 클라우드 갤러리입니다.</p>
+        <input type="text" id="login-username" placeholder="아이디 (예: hosu123)" style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #CBD5E0; border-radius: 6px; box-sizing: border-box;">
+        <input type="password" id="login-password" placeholder="비밀번호" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #CBD5E0; border-radius: 6px; box-sizing: border-box;">
+        <button id="login-submit-btn" style="width: 100%; padding: 12px; background: #1A365D; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px;">로그인</button>
+        <button id="register-submit-btn" style="width: 100%; padding: 12px; background: #E2E8F0; color: #2D3748; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">회원가입</button>
+      </div>
+    </div>
+
+    <div id="gateway-modal" class="modal">
+      <div class="modal-content" style="text-align: center; max-width: 350px;">
+        <span id="close-gateway-btn" class="close">&times;</span>
+        <h2 style="margin-top: 0; color: #1A365D;">작업 선택</h2>
+        <p style="color: #4A5568; margin-bottom: 20px;">어떤 방식의 로깅을 진행할까요?</p>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <button id="btn-digital-upload" style="padding: 15px; font-size: 15px; background: #2C3E50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📸 디지털 사진 자동 파싱</button>
+          <button id="btn-film-logging" style="padding: 15px; font-size: 15px; background: #E2E8F0; color: #2D3748; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🎞️ 필름 컷 현장 로깅</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="logger-modal" class="modal">
+      <div class="modal-content">
+        <span id="close-modal-btn" class="close">&times;</span>
+        <h2 id="modal-title" style="margin-top: 0;">필름 컷 현장 로깅</h2>
+        
+        <div class="form-group">
+          <label>필름 롤 선택:</label>
+          <select id="input-roll"></select>
+        </div>
+        <div class="form-group">
+          <label>컷(Cut) 번호 지정:</label>
+          <select id="input-cut-number"></select>
+        </div>
+
+        <div class="form-group">
+          <label>바디 선택:</label>
+          <select id="input-body"></select>
+        </div>
+        <div class="form-group">
+          <label>렌즈 선택:</label>
+          <select id="input-lens"></select>
+        </div>
+        <div class="form-group">
+          <label>조리개 값:</label>
+          <input type="text" id="input-aperture" list="aperture-options" placeholder="예: f/3.3">
+          <datalist id="aperture-options"></datalist>
+        </div>
+        <div class="form-group">
+          <label>셔터스피드:</label>
+          <select id="input-shutter">
+            <option value="1/60">1/60</option>
+            <option value="1/125">1/125</option>
+            <option value="1/250" selected>1/250</option>
+            <option value="1/500">1/500</option>
+            <option value="수동셔터">수동셔터</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ISO 감도:</label>
+          <input type="text" id="input-iso" placeholder="예: 400, 800" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <div class="form-group">
+          <label>현장 메모:</label>
+          <input type="text" id="input-notes" placeholder="촬영 환경 메모" style="width: 100%;">
+        </div>
+        <button id="log-btn" style="width: 100%; padding: 10px; background: #1A365D; color: white; border: none; cursor: pointer; border-radius: 4px;">데이터 기록 (슬롯 채우기)</button>
+      </div>
+    </div>
+
+    <div id="settings-modal" class="modal">
+      <div class="modal-content">
+        <span id="close-settings-btn" class="close">&times;</span>
+        <h2 style="margin-top: 0;">장비 인벤토리 관리</h2>
+        
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; border-bottom: 2px solid #E2E8F0; padding-bottom: 5px;">📷 바디 목록</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px;">
+            <input type="text" id="new-body-input" placeholder="새 바디 이름" style="flex: 1 1 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+            
+            <select id="new-body-max-shutter" style="flex: 1; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+              <option value="">제한 없음</option>
+              <option value="1/8000">최대 1/8000</option>
+              <option value="1/4000">최대 1/4000</option>
+              <option value="1/2000">최대 1/2000</option>
+              <option value="1/1000">최대 1/1000</option>
+              <option value="1/500">최대 1/500</option>
+            </select>
+            
+            <button id="add-body-btn" style="padding: 8px 15px; background: #2B6CB0; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">추가</button>
+          </div>
+          <ul id="manager-body-list" style="list-style: none; padding: 0; margin: 0; max-height: 100px; overflow-y: auto;"></ul>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; border-bottom: 2px solid #E2E8F0; padding-bottom: 5px;">🔍 렌즈 목록</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px;">
+            <input type="text" id="new-lens-input" placeholder="새 렌즈 이름" style="flex: 1 1 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+            
+            <input type="text" id="new-lens-max-ap" list="aperture-options" placeholder="최대개방 (ex: f/1.4)">
+            <input type="text" id="new-lens-min-ap" list="aperture-options" placeholder="최소조임 (ex: f/22)">
+            
+            <button id="add-lens-btn" style="padding: 8px 15px; background: #2B6CB0; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">추가</button>
+          </div>
+          <ul id="manager-lens-list" style="list-style: none; padding: 0; margin: 0; max-height: 100px; overflow-y: auto;"></ul>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <h3 style="font-size: 16px; border-bottom: 2px solid #E2E8F0; padding-bottom: 5px;">🎞️ 필름 롤 목록</h3>
+          <div style="margin-bottom: 10px; display: flex; gap: 5px;">
+            <input type="text" id="new-roll-input" placeholder="새 롤 명칭 (Kodak Gold #1)" style="flex: 2; padding: 8px;">
+            <select id="new-roll-max" style="flex: 1; padding: 8px;">
+              <option value="24">24장</option>
+              <option value="36">36장</option>
+            </select>
+            <button id="add-roll-btn" style="padding: 8px 15px; background: #2C3E50; color: white; border: none; cursor: pointer; border-radius: 4px;">생성</button>
+          </div>
+          <ul id="manager-roll-list" style="list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto;"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-modal" class="modal">
+      <div class="modal-content" style="max-width: 800px; padding: 30px; border-radius: 12px; text-align: center;">
+        <span id="close-detail-btn" class="close" style="right: 30px; top: 20px;">&times;</span>
+        <div id="detail-image-container" style="margin-bottom: 20px;"></div>
+        <div id="detail-metadata" style="background: #F7F9FA; padding: 20px; border-radius: 8px; text-align: left; line-height: 1.6;"></div>
+      </div>
+    </div>
+
+    <div id="roll-detail-modal" class="modal">
+      <div class="modal-content" style="max-width: 90%; width: 1000px; height: 80vh; overflow-y: auto; padding: 30px; border-radius: 12px;">
+        <span id="close-roll-detail-btn" class="close" style="right: 30px; top: 20px;">&times;</span>
+        <h2 id="roll-detail-title" style="margin-top: 0; color: #1A365D;">롤 상세 관리</h2>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">현상/스캔된 사진을 비어있는 데이터 슬롯에 매핑하고, 원하는 사진만 메인 갤러리에 발행(Publish)하세요.</p>
+        
+        <div id="roll-slot-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;">
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

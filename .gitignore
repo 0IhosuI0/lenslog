@@ -1,0 +1,22 @@
+# Node modules
+node_modules/
+
+# 환경 변수 (보안)
+.env
+.env.*
+*.local
+
+# 빌드 결과물 (Frontend)
+lenslog-app/dist/
+lenslog-app/dist-ssr/
+
+# 백엔드 업로드 파일 및 로컬 DB (Backend)
+lenslog-backend/uploads/
+lenslog-backend/prisma/dev.db
+lenslog-backend/prisma/dev.db-journal
+
+# OS 및 에디터 설정 파일
+.DS_Store
+.vscode/
+.idea/
+*.log

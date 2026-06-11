@@ -1,0 +1,76 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"         // <- '-js' 를 꼭 붙여주세요!
+  output   = "../src/generated/prisma"  // 경로 유지
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  bodies    Body[]
+  lenses    Lens[]
+  rolls     Roll[]
+  photos    Photo[]
+}
+
+model Body {
+  id     String  @id @default(uuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  maxShutterSpeed String?
+  photos Photo[]
+}
+
+model Lens {
+  id     String  @id @default(uuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  maxAperture String?  // [추가] 최대 개방 조리개 (예: "f/1.4")
+  minAperture String?  // [추가] 최소 조리개 (예: "f/22")
+  photos Photo[]
+}
+
+model Roll {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  maxFrames Int
+  createdAt DateTime @default(now())
+  photos    Photo[]
+}
+
+model Photo {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  
+  isDigital    Boolean  @default(false)
+  
+  rollId       String?
+  roll         Roll?    @relation(fields: [rollId], references: [id], onDelete: SetNull)
+  
+  // 필수(String)에서 선택(String?)으로 변경하고 onDelete 규칙 추가
+  bodyId       String?
+  body         Body?    @relation(fields: [bodyId], references: [id], onDelete: SetNull)
+  
+  lensId       String?
+  lens         Lens?    @relation(fields: [lensId], references: [id], onDelete: SetNull)
+  
+  cutIndex     Int?
+  aperture     String?
+  shutterSpeed String?
+  iso          String?  
+  notes        String?
+  imageUrl     String?
+  originalUrl  String?
+  isPublished  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}

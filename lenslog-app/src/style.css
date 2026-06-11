@@ -1,0 +1,71 @@
+* { box-sizing: border-box; }
+body { font-family: 'Arial', sans-serif; margin: 0; background-color: #F7F9FA; }
+
+/* Masonry 그리드 및 카드 스타일 */
+.grid { width: 100%; margin: 0 auto; }
+.grid-item { 
+  width: calc(33.333% - 20px); 
+  margin-bottom: 20px; 
+  background: white; 
+  border-radius: 8px; 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+  padding: 15px; 
+  /* 클릭 유도 및 호버 애니메이션 추가 */
+  cursor: pointer; 
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* 카드에 마우스를 올렸을 때의 효과 */
+.grid-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(15px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-item { width: calc(100% - 20px); }
+}
+
+/* 플로팅 액션 버튼 (FAB) */
+.fab {
+  position: fixed; bottom: 30px; right: 30px;
+  width: 60px; height: 60px; border-radius: 50%;
+  background-color: #1A365D; color: white;
+  font-size: 30px; border: none; cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  
+  /* 중앙 정렬 속성 추가 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  line-height: 1;
+}
+
+/* 모달 (팝업) 공통 스타일 */
+.modal {
+  display: none; position: fixed; z-index: 9999;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0,0,0,0.6);
+}
+.modal-content {
+  background-color: #fff; margin: 5% auto; padding: 20px;
+  border-radius: 8px; width: 90%; max-width: 400px;
+  position: relative;
+}
+.close { color: #aaa; position: absolute; right: 20px; top: 15px; font-size: 28px; font-weight: bold; cursor: pointer; }
+.close:hover { color: black; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+.form-group select, .form-group input { width: 100%; padding: 8px; box-sizing: border-box; }
