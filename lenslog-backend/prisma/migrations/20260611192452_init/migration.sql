@@ -11,6 +11,7 @@ CREATE TABLE "Body" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "maxShutterSpeed" TEXT,
     CONSTRAINT "Body_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -19,6 +20,8 @@ CREATE TABLE "Lens" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "maxAperture" TEXT,
+    "minAperture" TEXT,
     CONSTRAINT "Lens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -38,18 +41,21 @@ CREATE TABLE "Photo" (
     "userId" TEXT NOT NULL,
     "isDigital" BOOLEAN NOT NULL DEFAULT false,
     "rollId" TEXT,
+    "bodyId" TEXT,
+    "lensId" TEXT,
     "cutIndex" INTEGER,
-    "bodyId" TEXT NOT NULL,
-    "lensId" TEXT NOT NULL,
     "aperture" TEXT,
     "shutterSpeed" TEXT,
+    "iso" TEXT,
     "notes" TEXT,
     "imageUrl" TEXT,
+    "originalUrl" TEXT,
     "isPublished" BOOLEAN NOT NULL DEFAULT false,
-    CONSTRAINT "Photo_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Photo_rollId_fkey" FOREIGN KEY ("rollId") REFERENCES "Roll" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Photo_bodyId_fkey" FOREIGN KEY ("bodyId") REFERENCES "Body" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Photo_lensId_fkey" FOREIGN KEY ("lensId") REFERENCES "Lens" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Photo_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Photo_rollId_fkey" FOREIGN KEY ("rollId") REFERENCES "Roll" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "Photo_bodyId_fkey" FOREIGN KEY ("bodyId") REFERENCES "Body" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "Photo_lensId_fkey" FOREIGN KEY ("lensId") REFERENCES "Lens" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateIndex

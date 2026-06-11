@@ -43,9 +43,12 @@ const addPhoto = async (req, res) => {
         userId: req.user.id,
         isDigital: isDigital || false,
         rollId: rollId || null,
-        cutIndex: cutIndex ? parseInt(cutIndex, 10) : null,
+        
+        // [수정됨] 0이 false로 취급되어 날아가는 현상 방지
+        cutIndex: (cutIndex !== undefined && cutIndex !== null) ? parseInt(cutIndex, 10) : null,
+        
         bodyId, lensId, aperture, shutterSpeed, iso, notes, imageUrl,
-        originalUrl: originalUrl || null, // [신규] DB에 원본 URL 기록
+        originalUrl: originalUrl || null,
         isPublished: isPublished || false
       }
     });
@@ -170,18 +173,39 @@ const uploadAndParseRaw = async (req, res) => {
   }
 };
 
-// [신규] 사진 회전 처리 (PUT /api/photos/:id/rotate)
+// 사진 회전 처리 (PUT /api/photos/:id/rotate)
 const rotatePhoto = async (req, res) => {
   try {
     const { id } = req.params;
-    const { direction } = req.body; // 'cw'(시계방향) 또는 'ccw'(반시계방향)
+    const { direction } = req.body; 
 
     const photo = await prisma.photo.findUnique({ where: { id } });
     if (!photo || photo.userId !== req.user.id) {
       return res.status(403).json({ status: "error", message: "권한이 없습니다." });
     }
 
-    // 상대 경로(/uploads/...)에서 순수 파일 이름만 추출 (?t= 타임스탬프 제거)
+    const angle = direction === 'cw' ? 90 : -90;
+
+    // 1. 필름 사진(Base64)인 경우 처리
+    if (photo.imageUrl.startsWith('data:image')) {
+      const base64Data = photo.imageUrl.split(';base64,').pop();
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      const rotatedBuffer = await sharp(buffer).rotate(angle).toBuffer();
+      
+      const mimeType = photo.imageUrl.match(/data:(.*?);/)[1] || 'image/jpeg';
+      const newBase64 = `data:${mimeType};base64,${rotatedBuffer.toString('base64')}`;
+
+      // Base64 문자열은 파일 덮어쓰기가 아니므로 DB 업데이트 필요
+      await prisma.photo.update({
+        where: { id },
+        data: { imageUrl: newBase64 }
+      });
+
+      return res.json({ status: "success", message: "회전 완료 (Base64)", newImageUrl: newBase64 });
+    }
+
+    // 2. 디지털 사진(물리적 파일)인 경우 기존 로직 처리
     const fileName = photo.imageUrl.split('/').pop().split('?')[0];
     const filePath = path.join(__dirname, '../../uploads', fileName);
 
@@ -189,13 +213,9 @@ const rotatePhoto = async (req, res) => {
       return res.status(404).json({ status: "error", message: "파일을 찾을 수 없습니다." });
     }
 
-    const angle = direction === 'cw' ? 90 : -90;
-
-    // 1. 웹용 이미지 회전 후 덮어쓰기
     const buffer = await sharp(filePath).rotate(angle).toBuffer();
     fs.writeFileSync(filePath, buffer);
 
-    // 2. 원본 이미지도 존재한다면 같이 회전 처리
     if (photo.originalUrl) {
       const origName = photo.originalUrl.split('/').pop().split('?')[0];
       const origPath = path.join(__dirname, '../../uploads/originals', origName);
@@ -205,7 +225,7 @@ const rotatePhoto = async (req, res) => {
       }
     }
 
-    res.json({ status: "success", message: "회전 완료" });
+    res.json({ status: "success", message: "회전 완료 (File)" });
   } catch (error) {
     console.error("회전 에러:", error);
     res.status(500).json({ status: "error", message: "회전 실패" });

@@ -22,3 +22,4 @@ lenslog-backend/prisma/dev.db-journal
 .vscode/
 .idea/
 *.log
+*.docx

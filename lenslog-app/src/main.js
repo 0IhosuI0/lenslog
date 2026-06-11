@@ -690,7 +690,7 @@ function renderGallery() {
     const div = document.createElement('div');
     div.className = 'grid-item';
     
-    let imageHtml = `<img src="${window.getFullUrl(photo.imageUrl)}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 4px; margin-bottom: 5px; display: block;">`;
+    let imageHtml = `<img src="${window.getFullUrl(photo.imageUrl)}" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 5px; display: block;">`;
     const notesLower = (photo.notes || "").toLowerCase();
     const isRawBadge = photo.isDigital && (notesLower.includes('.dng') || notesLower.includes('.cr2') || notesLower.includes('.nef') || notesLower.includes('.arw'));
     const rawBadge = isRawBadge ? `<span style="background:#E53E3E; color:white; padding:2px 4px; border-radius:3px; font-size:10px; margin-left:5px;">RAW</span>` : '';
@@ -734,6 +734,13 @@ function renderGallery() {
           await apiFetch(`/photos/${photo.id}`, 'PUT', { isPublished: newStatus });
           photo.isPublished = newStatus;
           
+          if (photo.is_film) {
+              const targetRoll = state.rollInventory.find(r => r.id === photo.rollId);
+              if (targetRoll && targetRoll.slots[photo.cutIndex]) {
+                  targetRoll.slots[photo.cutIndex].isPublished = newStatus;
+              }
+          }
+
           // 동기화를 위해 글로벌 배열 데이터를 백엔드에서 다시 불러옴
           const globalRes = await apiFetch('/photos/global');
           state.globalPhotos = globalRes.data;
@@ -938,19 +945,38 @@ function openDetailModal(photo, sourceTag, lensName, imageHtml, rawBadge, cutDis
       if (res.status === 'success') {
         // 2. 브라우저 캐시 무력화 (Cache Busting)
         // URL 뒤에 쿼리파라미터(?t=시간)를 붙여 브라우저가 완전히 새로운 파일로 인식하게 만듦
-        const ts = new Date().getTime();
+       if (res.newImageUrl) {
+          // Base64인 경우 서버에서 넘겨준 새 문자열로 교체
+          photo.imageUrl = res.newImageUrl;
+        } else {
+          // 물리적 파일인 경우 기존처럼 타임스탬프를 붙여 캐시 무력화
+          const ts = new Date().getTime();
+          photo.imageUrl = photo.imageUrl.split('?')[0] + `?t=${ts}`;
+          if (photo.originalUrl) {
+            photo.originalUrl = photo.originalUrl.split('?')[0] + `?t=${ts}`;
+          }
+        }
+          
+        if (photo.is_film) {
+            const targetRoll = state.rollInventory.find(r => r.id === photo.rollId);
+            if (targetRoll && targetRoll.slots[photo.cutIndex]) {
+                targetRoll.slots[photo.cutIndex].imageUrl = photo.imageUrl;
+                if (photo.originalUrl) {
+                    targetRoll.slots[photo.cutIndex].originalUrl = photo.originalUrl;
+                }
+            }
+        }
         
-        photo.imageUrl = photo.imageUrl.split('?')[0] + `?t=${ts}`;
-        if (photo.originalUrl) {
-          photo.originalUrl = photo.originalUrl.split('?')[0] + `?t=${ts}`;
+        const globalPhoto = state.globalPhotos.find(p => p.id === photo.id);
+        if (globalPhoto) {
+          globalPhoto.imageUrl = photo.imageUrl;
+          if (globalPhoto.originalUrl) globalPhoto.originalUrl = photo.originalUrl;
         }
 
-        // 3. 모달 내부의 띄워져 있는 이미지 즉시 교체
         if (imgElement) {
           imgElement.src = window.getFullUrl(photo.imageUrl);
         }
 
-        // 4. 뒤에 깔려 있는 Masonry 갤러리 썸네일도 동기화
         renderGallery();
       }
     } catch (err) {
