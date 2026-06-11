@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // 미들웨어 설정
-app.use(cors({
+app.use(cors({ // 과제 제출을 위해 모든 출처 허용
     origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -16,7 +16,6 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// 업로드된 정적 이미지 파일 접근 주소 설정 (http://localhost:5000/uploads/파일명)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/uploads/originals', express.static(path.join(__dirname, '../uploads/originals')));
 

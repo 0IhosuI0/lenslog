@@ -5,6 +5,8 @@ node_modules/
 .env
 .env.*
 *.local
+*.db
+*.db-journal
 
 # 빌드 결과물 (Frontend)
 lenslog-app/dist/

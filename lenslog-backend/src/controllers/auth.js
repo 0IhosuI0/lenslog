@@ -1,8 +1,9 @@
 // src/controllers/auth.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const prisma = require('../config/db'); // [수정] DB 인스턴스 로드
+const prisma = require('../config/db');
 
+// 환경 변수가 없는 경우를 대비한 기본값 설정 (개발 및 테스트 편의용)
 const JWT_SECRET = process.env.JWT_SECRET || 'lenslog_secret_key_2026';
 
 // 1. 회원가입 (DB에 영구 저장)
@@ -14,7 +15,7 @@ const register = async (req, res) => {
       return res.status(400).json({ status: "error", message: "아이디와 비밀번호를 모두 입력해주세요." });
     }
 
-    // [수정] Prisma를 이용한 중복 유저 검증
+    // Prisma를 이용한 중복 유저 검증
     const userExists = await prisma.user.findUnique({
       where: { username }
     });
@@ -26,7 +27,7 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // [수정] Prisma를 이용한 신규 유저 생성
+    // Prisma를 이용한 신규 유저 생성
     const newUser = await prisma.user.create({
       data: {
         username,
@@ -50,7 +51,7 @@ const login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // [수정] Prisma 유저 탐색
+    // Prisma 유저 탐색
     const user = await prisma.user.findUnique({
       where: { username }
     });
@@ -84,7 +85,7 @@ const login = async (req, res) => {
 // 3. 내 정보 확인
 const getMe = async (req, res) => {
   try {
-    // [수정] Prisma 유저 매핑
+    // Prisma 유저 매핑
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: { id: true, username: true, createdAt: true } // 비밀번호 제외 조회

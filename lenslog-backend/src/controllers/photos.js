@@ -137,7 +137,7 @@ const uploadAndParseRaw = async (req, res) => {
         throw new Error(`Python 변환 실패: ${pythonErr.message}`);
       }
       
-      // [변경] RAW 원본 파일을 삭제하지 않고 originals 폴더로 이동 (보관)
+      // RAW 원본 파일을 삭제하지 않고 originals 폴더로 이동 (보관)
       fs.renameSync(filePath, originalFinalPath);
     } else {
       finalFileName = fileNameBase + (ext || '.jpg');

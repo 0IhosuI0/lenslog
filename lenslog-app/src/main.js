@@ -6,7 +6,7 @@ import Chart from 'chart.js/auto';
 const HOST = window.location.hostname;
 const API_BASE = `http://${HOST}:5001/api`;
 
-// [여기에 추가!] 어디서든 쓸 수 있는 무적의 URL 변환기
+// 어디서든 쓸 수 있는 URL 변환기
 window.getFullUrl = function(url) {
     if (!url) return url;
     
@@ -15,7 +15,7 @@ window.getFullUrl = function(url) {
         return `http://${HOST}:5001${url}`;
     }
     
-    // 2. 과거 DB에 박제된 옛날 사진들 (http://localhost:5001/...) 강제 변환!
+    // 2. 과거 DB에 박제된 옛날 사진들 (http://localhost:5001/...) 강제 변환
     if (url.includes('localhost')) {
         return url.replace('localhost', HOST);
     }
@@ -368,7 +368,6 @@ function openRollDetailModal(rollId) {
             const matchedLens = state.lensInventory.find(l => l.id === slotData.lensId);
             const lensName = matchedLens ? matchedLens.name : "삭제된 렌즈";
 
-            // [수정 후]
             let imgDisplay = slotData.imageUrl 
                 ? `<img src="${window.getFullUrl(slotData.imageUrl)}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; margin-bottom:10px;">`
                 : `<div style="height: 120px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: #718096; margin-bottom: 10px; cursor:pointer;" class="img-upload-trigger">+ 현상 이미지 매핑</div>`;
@@ -389,7 +388,6 @@ function openRollDetailModal(rollId) {
                 <input type="file" id="upload-${rollId}-${index}" accept="image/jpeg, image/png" style="display:none;">
             `;
 
-            // 파일 매핑 로직 (백엔드 PUT 구현 필요)
             // 파일 매핑 로직
             const handleUploadClick = () => div.querySelector(`#upload-${rollId}-${index}`).click();
             if (div.querySelector('.img-upload-trigger')) div.querySelector('.img-upload-trigger').onclick = handleUploadClick;
@@ -406,7 +404,7 @@ function openRollDetailModal(rollId) {
                     slotData.imageUrl = base64;
                     slotData.isPublished = true;
                     
-                    // [추가] 글로벌 데이터 재요청 및 갱신
+                    // 글로벌 데이터 재요청 및 갱신
                     const globalRes = await apiFetch('/photos/global');
                     state.globalPhotos = globalRes.data;
                     
@@ -697,7 +695,7 @@ function renderGallery() {
     const isRawBadge = photo.isDigital && (notesLower.includes('.dng') || notesLower.includes('.cr2') || notesLower.includes('.nef') || notesLower.includes('.arw'));
     const rawBadge = isRawBadge ? `<span style="background:#E53E3E; color:white; padding:2px 4px; border-radius:3px; font-size:10px; margin-left:5px;">RAW</span>` : '';
     
-    // [신규] 버튼 UI: 마이페이지일 때 퍼블리싱 상태 버튼과 삭제 버튼을 나란히 배치
+    // 버튼 UI: 마이페이지일 때 퍼블리싱 상태 버튼과 삭제 버튼을 나란히 배치
     let actionButtons = '';
     if (currentTab === 'mypage') {
         const pubStatusText = photo.isPublished ? '🌐 공유 중' : '🔒 나만 보기';
@@ -931,7 +929,7 @@ function openDetailModal(photo, sourceTag, lensName, imageHtml, rawBadge, cutDis
     });
   }
 
-  // --- [신규] 이미지 회전 처리 로직 ---
+  // --- 이미지 회전 처리 로직 ---
   const handleRotate = async (direction) => {
     try {
       // 1. 서버에 회전 요청
