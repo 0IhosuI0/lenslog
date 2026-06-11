@@ -86,13 +86,14 @@ npm install
 
 # 2. 로컬 데이터베이스 환경 변수 설정
 # 폴더 루트에 .env 파일을 생성하고 아래 내용을 입력합니다. (기본 SQLite 경로 지정)
-echo DATABASE_URL=\"file:../prisma/dev.db\" > .env
-# Windows의 경우 "Set-Content -Path .env -Value "DATABASE_URL=file:./dev.db" -Encoding utf8"
+echo "DATABASE_URL=\"file:../prisma/dev.db\"" > .env
+
 
 
 # 3. Prisma ORM을 통한 SQLite 데이터베이스 초기화 및 테이블 생성
 npx prisma generate
 npx prisma db push
+# Windows 환경에서 실행 실패하는 경우 트러블 슈팅의 첫번째 단계를 확인하십시오.
 ```
 
 ### 3.3 프론트엔드(Frontend) 패키지 설치
@@ -133,9 +134,14 @@ npm run dev
 
 ## 5. 초기 구동 트러블슈팅 (FAQ)
 
+**Q. Windows에서 prisma db push 명령어 수행이 되지 않습니다.**
+* **A1:** .env의 내용이 DATABASE_URL="file:../prisma/dev.db" 이 맞는지 확인하십시오. 역슬래시(\) 또는 쌍따옴표(")가 불필요하게 들어가 있지 않은지 확인하십시오.
+
+
 **Q. 사진 업로드 시 RAW 파일 변환 에러(`Python 변환 실패`)가 발생합니다.**
 * **A1:** 터미널 환경에서 `python3` 명령어를 직접 입력했을 때 인터프리터 쉘이 정상적으로 진입하는지 확인하십시오. Windows 사용자는 환경변수 PATH 설정을 다시 점검하고 `python3` 실행파일 연동 조치를 취해야 합니다.
 * **A2:** 백엔드 구동 환경에 `rawpy`와 `Pillow` 패키지가 누락되었을 수 있습니다. 설치 명령어를 재수행하십시오.
+
  
 **Q. 데이터 로딩 중 에러가 발생하거나 장비 등록이 되지 않습니다.**
 * **A:** 백엔드 폴더 내부에서 `npx prisma db push` 명령어가 정상적으로 완료되었는지 확인하십시오. `prisma/dev.db` 데이터베이스 파일 생성 여부 및 읽기/쓰기 권한을 확인하십시오.
