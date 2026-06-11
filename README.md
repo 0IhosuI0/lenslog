@@ -86,9 +86,12 @@ npm install
 
 # 2. 로컬 데이터베이스 환경 변수 설정
 # 폴더 루트에 .env 파일을 생성하고 아래 내용을 입력합니다. (기본 SQLite 경로 지정)
-echo "DATABASE_URL=\"file:../prisma/dev.db\"" > .env
+echo DATABASE_URL=\"file:../prisma/dev.db\" > .env
+# Windows의 경우 "Set-Content -Path .env -Value "DATABASE_URL=file:./dev.db" -Encoding utf8"
+
 
 # 3. Prisma ORM을 통한 SQLite 데이터베이스 초기화 및 테이블 생성
+npx prisma generate
 npx prisma db push
 ```
 
