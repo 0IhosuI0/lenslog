@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { exiftool } = require('exiftool-vendored');
 const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const execFile = util.promisify(require('child_process').execFile);
 const sharp = require('sharp');
 
 
@@ -134,7 +134,7 @@ const uploadAndParseRaw = async (req, res) => {
       const pythonScriptPath = path.join(__dirname, '../utils/raw_converter.py');
       
       try {
-        const { stdout, stderr } = await exec(`python3 "${pythonScriptPath}" "${filePath}" "${finalPath}"`);
+        const { stdout, stderr } = await execFile(`./venv/bin/python3 "${pythonScriptPath}" "${filePath}" "${finalPath}"`);
         if (!stdout.includes("SUCCESS")) throw new Error(`에러: ${stderr}`);
       } catch (pythonErr) {
         throw new Error(`Python 변환 실패: ${pythonErr.message}`);
@@ -206,7 +206,7 @@ const rotatePhoto = async (req, res) => {
     }
 
     // 2. 디지털 사진(물리적 파일)인 경우 기존 로직 처리
-    const fileName = photo.imageUrl.split('/').pop().split('?')[0];
+    const fileName = path.basename(photo.imageUrl.split('?')[0]);
     const filePath = path.join(__dirname, '../../uploads', fileName);
 
     if (!fs.existsSync(filePath)) {

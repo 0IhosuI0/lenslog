@@ -1168,51 +1168,66 @@ const settingsModal = document.getElementById('settings-modal');
 const detailModal = document.getElementById('detail-modal'); 
 const rollDetailModal = document.getElementById('roll-detail-modal'); 
 
-document.getElementById('open-modal-btn').onclick = () => { gatewayModal.style.display = "block"; };
+// 모든 모달 닫기 및 배경 스크롤 복구 공통 함수
+const closeAllModals = () => {
+  gatewayModal.style.display = "none";
+  loggerModal.style.display = "none";
+  settingsModal.style.display = "none";
+  detailModal.style.display = "none";
+  rollDetailModal.style.display = "none";
+  document.body.style.overflow = ''; // 스크롤 잠금 해제
+};
+
+document.getElementById('open-modal-btn').onclick = () => { 
+  gatewayModal.style.display = "block"; 
+  document.body.style.overflow = 'hidden'; // 스크롤 잠금
+};
+
 document.getElementById('btn-digital-upload').onclick = () => {
   gatewayModal.style.display = "none";
+  document.body.style.overflow = ''; 
   document.getElementById('auto-upload-input').click();
 };
+
 document.getElementById('btn-film-logging').onclick = () => {
   gatewayModal.style.display = "none";
-
-  // 이전 작업으로 오염된 디지털 사진 업로드 상태를 완전히 초기화
   pendingImageData = { url: null, is_digital_supplement: false };
-
-  // 필름 기록 전용 UI 상태 복구
   document.getElementById('input-roll').closest('.form-group').style.display = 'block';
   document.getElementById('input-cut-number').closest('.form-group').style.display = 'block';
   document.getElementById('modal-title').innerText = "🎞️ 필름 컷 현장 로깅"; 
   document.getElementById('input-notes').value = '';
-  
   updateAvailableCutNumbers(); 
   loggerModal.style.display = "block";
-};
-document.getElementById('open-settings-btn').onclick = () => { renderGearManager(); settingsModal.style.display = "block"; };
-
-document.getElementById('close-gateway-btn').onclick = () => gatewayModal.style.display = "none";
-document.getElementById('close-modal-btn').onclick = () => loggerModal.style.display = "none";
-document.getElementById('close-settings-btn').onclick = () => settingsModal.style.display = "none";
-document.getElementById('close-detail-btn').onclick = () => detailModal.style.display = "none";
-document.getElementById('close-roll-detail-btn').onclick = () => rollDetailModal.style.display = "none";
-
-// 1. 상세 모달 닫기 버튼 클릭 시 스크롤 복구
-document.getElementById('close-detail-btn').onclick = () => {
-  detailModal.style.display = "none";
-  document.body.style.overflow = ''; 
+  document.body.style.overflow = 'hidden'; // 스크롤 잠금
 };
 
+document.getElementById('open-settings-btn').onclick = () => { 
+  renderGearManager(); 
+  settingsModal.style.display = "block"; 
+  document.body.style.overflow = 'hidden'; // 스크롤 잠금
+};
+
+// 닫기 버튼 이벤트 연결
+document.getElementById('close-gateway-btn').onclick = closeAllModals;
+document.getElementById('close-modal-btn').onclick = closeAllModals;
+document.getElementById('close-settings-btn').onclick = closeAllModals;
+document.getElementById('close-detail-btn').onclick = closeAllModals;
+document.getElementById('close-roll-detail-btn').onclick = closeAllModals;
+
+// 모달 바깥 배경 클릭 시 닫기
 window.onclick = (event) => { 
-  if (event.target == gatewayModal) gatewayModal.style.display = "none";
-  if (event.target == loggerModal) loggerModal.style.display = "none"; 
-  if (event.target == settingsModal) settingsModal.style.display = "none"; 
-  if (event.target == rollDetailModal) rollDetailModal.style.display = "none";
-  
-  // 2. 모달 창 바깥 배경 클릭 시 스크롤 복구
-  if (event.target == detailModal) {
-    detailModal.style.display = "none";
-    document.body.style.overflow = ''; 
+  if ([gatewayModal, loggerModal, settingsModal, rollDetailModal, detailModal].includes(event.target)) {
+    closeAllModals();
   }
+};
+
+// 폼 제출 완료 시 모달 닫고 스크롤 복구 (기존 log-btn 이벤트 로직 안에도 아래 코드가 실행되도록 보완)
+const originalLogBtnClick = document.getElementById('log-btn').onclick;
+if(originalLogBtnClick) {
+  // 버튼 클릭 후 창이 닫힐 때 스크롤을 풀어주기 위함
+  document.getElementById('log-btn').addEventListener('click', () => {
+    setTimeout(() => { document.body.style.overflow = ''; }, 500);
+  });
 }
 
 // 초기화 시작

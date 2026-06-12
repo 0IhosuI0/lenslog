@@ -29,6 +29,10 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({ 
+  storage: storage, 
+  fileFilter: fileFilter,
+  limits: { fileSize: 100 * 1024 * 1024 } // 100MB 제한
+});
 
 module.exports = upload;

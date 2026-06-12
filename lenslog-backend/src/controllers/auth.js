@@ -3,8 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/db');
 
-// 환경 변수가 없는 경우를 대비한 기본값 설정 (개발 및 테스트 편의용)
-const JWT_SECRET = process.env.JWT_SECRET || 'lenslog_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET 환경변수가 설정되지 않았습니다.");
+  process.exit(1); // 서버 구동 차단
+}
 
 // 1. 회원가입 (DB에 영구 저장)
 const register = async (req, res) => {
