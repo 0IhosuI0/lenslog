@@ -219,19 +219,36 @@ const rotatePhoto = async (req, res) => {
       return res.status(404).json({ status: "error", message: "파일을 찾을 수 없습니다." });
     }
 
+    // 파일 회전 및 덮어쓰기
     const buffer = await sharp(filePath).rotate(angle).toBuffer();
     fs.writeFileSync(filePath, buffer);
 
+    let newOriginalUrl = photo.originalUrl;
     if (photo.originalUrl) {
-      const origName = photo.originalUrl.split('/').pop().split('?')[0];
+      // 보안을 위해 split('/').pop() 대신 path.basename 사용
+      const origName = path.basename(photo.originalUrl.split('?')[0]);
       const origPath = path.join(__dirname, '../../uploads/originals', origName);
       if (fs.existsSync(origPath)) {
         const origBuffer = await sharp(origPath).rotate(angle).toBuffer();
         fs.writeFileSync(origPath, origBuffer);
       }
+      // 원본 사진에도 캐시 무효화 타임스탬프 추가
+      newOriginalUrl = `/uploads/originals/${origName}?t=${Date.now()}`;
     }
 
-    res.json({ status: "success", message: "회전 완료 (File)" });
+    // 썸네일/웹용 사진에 캐시 무효화 타임스탬프 추가
+    const newImageUrl = `/uploads/${fileName}?t=${Date.now()}`;
+
+    // DB에 타임스탬프가 붙은 새로운 주소로 업데이트하여 프론트엔드가 새 파일을 강제 호출하도록 유도
+    await prisma.photo.update({
+      where: { id },
+      data: { 
+        imageUrl: newImageUrl,
+        originalUrl: newOriginalUrl || null
+      }
+    });
+
+    res.json({ status: "success", message: "회전 완료 (File)", newImageUrl });
   } catch (error) {
     console.error("회전 에러:", error);
     res.status(500).json({ status: "error", message: "회전 실패" });
