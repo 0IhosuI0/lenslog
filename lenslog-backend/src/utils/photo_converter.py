@@ -2,9 +2,19 @@ import sys
 import io
 import rawpy
 from PIL import Image
+import pillow_heif
+from pillow_heif import register_heif_opener
+register_heif_opener()
 
-def convert_raw_to_jpg(input_path, output_path):
+def convert_image(input_path, output_path):
     try:
+        # 1. HEIC/HEIF 처리
+        if pillow_heif.is_supported(input_path):
+            img = Image.open(input_path)
+            img.convert('RGB').save(output_path, 'JPEG', quality=85)
+            print("SUCCESS (HEIC_CONVERTED)")
+            return
+        # 2. rawpy
         with rawpy.imread(input_path) as raw:
             # 1. 내장 미리보기(Embedded Preview) 추출 시도
             try:
@@ -45,4 +55,4 @@ if __name__ == "__main__":
         
     input_file = sys.argv[1]
     output_file = sys.argv[2]
-    convert_raw_to_jpg(input_file, output_file)
+    convert_image(input_file, output_file)

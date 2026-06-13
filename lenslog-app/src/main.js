@@ -3,23 +3,19 @@ import Masonry from 'masonry-layout';
 import exifr from 'exifr';
 import Chart from 'chart.js/auto'; 
 
-const HOST = window.location.hostname;
-const API_BASE = `http://${HOST}:5001/api`;
+export const API_BASE = `/api`;
 
-// 어디서든 쓸 수 있는 URL 변환기
+// 2. 어디서든 쓸 수 있는 URL 변환기 (초간단 버전)
 window.getFullUrl = function(url) {
     if (!url) return url;
     
-    // 1. 방금 백엔드를 수정해서 새로 올린 사진들 (/uploads/...) 처리
-    if (url.startsWith('/')) {
-        return `http://${HOST}:5001${url}`;
-    }
-    
-    // 2. 과거 DB에 박제된 옛날 사진들 (http://localhost:5001/...) 강제 변환
+    // 과거 DB에 박제된 옛날 사진들 (http://localhost:5001/...) 강제 변환
     if (url.includes('localhost')) {
-        return url.replace('localhost', HOST);
+        // 도메인과 포트를 아예 떼어버리고 "/uploads/..." 형태의 상대 경로로 만듦
+        return url.replace(/https?:\/\/localhost:5001/, '');
     }
     
+    // 이미 '/' 로 시작하는 정상적인 데이터 (/uploads/...)는 그대로 통과
     return url;
 };
 

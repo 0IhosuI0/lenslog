@@ -14,6 +14,16 @@ body { font-family: 'Arial', sans-serif; margin: 0; background-color: #F7F9FA; }
   cursor: pointer; 
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   animation: fadeIn 0.4s ease-out forwards;
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.grid-item p,
+.grid-item span,
+.grid-item div {
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 /* 카드에 마우스를 올렸을 때의 효과 */
@@ -34,7 +44,11 @@ body { font-family: 'Arial', sans-serif; margin: 0; background-color: #F7F9FA; }
 }
 
 @media (max-width: 768px) {
-  .grid-item { width: calc(100% - 20px); }
+  .grid-item { 
+    width: calc(100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 /* 플로팅 액션 버튼 (FAB) */

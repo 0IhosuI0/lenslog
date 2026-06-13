@@ -11,7 +11,8 @@ const PORT = process.env.PORT;
 const allowedOrigins = [
   'http://lenslog.ghtn10000.kro.kr:8080', 
   'http://localhost:8080',
-  'http://127.0.0.1:8080'
+  'http://127.0.0.1:8080',
+  'http://192.168.0.58:8080'
 ];
 
 app.use(cors({
@@ -26,7 +27,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

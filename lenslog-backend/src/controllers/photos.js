@@ -115,7 +115,7 @@ const uploadAndParseRaw = async (req, res) => {
     const filePath = req.file.path;
     const originalName = req.file.originalname;
     const ext = path.extname(originalName).toLowerCase();
-    const isRaw = ['.dng', '.cr2', '.nef', '.arw'].includes(ext);
+    const isRaw = ['.dng', '.cr2', '.nef', '.arw', '.heic', '.heif'].includes(ext);
 
     let tags = {};
     try { tags = await exiftool.read(filePath); } catch (e) { console.error(e); }
@@ -131,10 +131,10 @@ const uploadAndParseRaw = async (req, res) => {
     if (isRaw) {
       finalFileName = fileNameBase + '.jpg';
       finalPath = path.join(__dirname, '../../uploads', finalFileName);
-      const pythonScriptPath = path.join(__dirname, '../utils/raw_converter.py');
+      const pythonScriptPath = path.join(__dirname, '../utils/photo_converter.py');
       
       try {
-        const { stdout, stderr } = await execFile(`./venv/bin/python3 "${pythonScriptPath}" "${filePath}" "${finalPath}"`);
+        const { stdout, stderr } = await execFile('./venv/bin/python3', [pythonScriptPath, filePath, finalPath]);
         if (!stdout.includes("SUCCESS")) throw new Error(`에러: ${stderr}`);
       } catch (pythonErr) {
         throw new Error(`Python 변환 실패: ${pythonErr.message}`);
@@ -193,7 +193,13 @@ const rotatePhoto = async (req, res) => {
       
       const rotatedBuffer = await sharp(buffer).rotate(angle).toBuffer();
       
-      const mimeType = photo.imageUrl.match(/data:(.*?);/)[1] || 'image/jpeg';
+      let mimeType = 'image/jpeg';
+      const matchStart = photo.imageUrl.indexOf('data:');
+      const matchEnd = photo.imageUrl.indexOf(';');
+
+      if (matchStart !== -1 && matchEnd !== -1) {
+        mimeType = photo.imageUrl.substring(matchStart + 5, matchEnd);
+      }
       const newBase64 = `data:${mimeType};base64,${rotatedBuffer.toString('base64')}`;
 
       // Base64 문자열은 파일 덮어쓰기가 아니므로 DB 업데이트 필요
